@@ -245,9 +245,17 @@ app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ CRITICAL: Import authController to register SAML strategy
-// This must come after passport initialization
-require('./controllers/authController');
+// ✅ CRITICAL: Only import SAML strategy if SAML is enabled
+if (config.saml.enabled) {
+  try {
+    require('./controllers/authController');
+    logger.info('SAML authentication enabled');
+  } catch (error) {
+    logger.warn('Failed to initialize SAML, continuing without SAML support', error);
+  }
+} else {
+  logger.info('SAML authentication disabled');
+}
 
 // Passport session configuration
 passport.serializeUser((user, done) => {
@@ -336,7 +344,7 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   
   // Only set HSTS in production with HTTPS
-  if (config.server.nodeEnv === 'production') {
+  if (config.server.nodeEnv === 'production' && config.server.httpsEnabled) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   
@@ -376,8 +384,10 @@ app.use('/reports', requireAuth, requireAnyRole(['DO', 'ADMIN']), express.static
 // Auth routes must be first to handle SAML callbacks
 app.use('/auth', require('./routes/auth'));
 
-// SAML metadata route (provides SP metadata to Azure AD)
-app.use('/saml', samlMetadataRoutes);
+// SAML metadata route (only if SAML is enabled)
+if (config.saml.enabled) {
+  app.use('/saml', samlMetadataRoutes);
+}
 
 // API routes
 app.use('/upload', uploadRoutes);
@@ -391,9 +401,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: config.server.nodeEnv,
     saml: {
-      entryPoint: !!process.env.SAML_ENTRY_POINT,
-      issuer: !!process.env.SAML_ISSUER,
-      callbackUrl: !!process.env.SAML_CALLBACK_URL
+      enabled: config.saml.enabled,
+      entryPoint: !!config.saml.entryPoint,
+      issuer: !!config.saml.issuer,
+      callbackUrl: !!config.saml.callbackUrl
     }
   });
 });
@@ -401,36 +412,39 @@ app.get('/health', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Excel Upload API Server with SAML SSO',
+    message: 'Excel Upload API Server' + (config.saml.enabled ? ' with SAML SSO' : ''),
     version: '1.0.0',
     environment: config.server.nodeEnv,
     endpoints: {
       auth: '/auth/*',
-      saml: '/saml/metadata',
+      saml: config.saml.enabled ? '/saml/metadata' : 'disabled',
       health: '/health',
       api: '/api/*'
     }
   });
 });
 
-// SAML-specific test endpoint (for debugging)
-app.get('/debug/saml', requireAuth, (req, res) => {
-  res.json({
-    session: {
-      authenticated: req.session.authenticated,
-      userId: req.session.userId,
-      role: req.session.role,
-      email: req.session.userEmail
-    },
-    user: req.user,
-    environment: {
-      samlEntryPoint: !!process.env.SAML_ENTRY_POINT,
-      samlIssuer: !!process.env.SAML_ISSUER,
-      samlCallbackUrl: process.env.SAML_CALLBACK_URL,
-      frontendUrl: process.env.FRONTEND_URL
-    }
+// SAML-specific test endpoint (for debugging, only if SAML enabled)
+if (config.saml.enabled) {
+  app.get('/debug/saml', requireAuth, (req, res) => {
+    res.json({
+      session: {
+        authenticated: req.session.authenticated,
+        userId: req.session.userId,
+        role: req.session.role,
+        email: req.session.userEmail
+      },
+      user: req.user,
+      environment: {
+        samlEnabled: config.saml.enabled,
+        samlEntryPoint: !!config.saml.entryPoint,
+        samlIssuer: !!config.saml.issuer,
+        samlCallbackUrl: config.saml.callbackUrl,
+        frontendUrl: process.env.FRONTEND_URL
+      }
+    });
   });
-});
+}
 
 // 404 handler
 app.use((req, res) => {
@@ -451,7 +465,7 @@ app.use((req, res) => {
 // Global error handler (must be last)
 app.use((err, req, res, next) => {
   // Log SAML-specific errors in detail
-  if (err.message?.includes('SAML') || req.path?.includes('sso')) {
+  if (config.saml.enabled && (err.message?.includes('SAML') || req.path?.includes('sso'))) {
     logger.error('SAML Error Details', {
       error: err.message,
       stack: err.stack,
@@ -465,7 +479,7 @@ app.use((err, req, res, next) => {
   errorHandler(err, req, res, next);
 });
 
-// Graceful shutdown
+// Graceful shutdown handlers
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
   process.exit(0);
@@ -491,26 +505,5 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-/* Start server
-const PORT = config.server.port;
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`, {
-    environment: config.server.nodeEnv,
-    port: PORT,
-    samlConfigured: !!(process.env.SAML_ENTRY_POINT && process.env.SAML_ISSUER),
-    endpoints: {
-      health: `http://localhost:${PORT}/health`,
-      samlLogin: `http://localhost:${PORT}/auth/sso`,
-      samlCallback: `http://localhost:${PORT}/auth/sso/callback`,
-      samlMetadata: `http://localhost:${PORT}/saml/metadata`
-    }
-  });
-});
-*/
-
-// Handle server errors
-server.on('error', (error) => {
-  logger.error('Server error:', error);
-});
-
+// Export the app for server.js to use
 module.exports = app;

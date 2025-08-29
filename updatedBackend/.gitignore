@@ -8,3 +8,5 @@ cert.pem
 
 
 *.pem
+node_modules
+.DS_Store

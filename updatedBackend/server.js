@@ -9,70 +9,140 @@ const logger = require('./utils/logger');
 // Import your existing app setup
 const app = require('./app-setup'); // Your existing app.js renamed
 
-// SSL certificate options
+// Check if HTTPS should be enabled and certificates exist
+let httpsEnabled = false;
 let httpsOptions = null;
-if (config.server.httpsEnabled) {
+
+// Only try to load SSL if explicitly enabled
+if (config.server.httpsEnabled === true) {
   try {
-    httpsOptions = {
-      key: fs.readFileSync(config.ssl.keyPath),
-      cert: fs.readFileSync(config.ssl.certPath)
-    };
-    logger.info('SSL certificates loaded successfully');
+    logger.info('HTTPS enabled, checking for certificate files...', {
+      keyPath: config.ssl.keyPath,
+      certPath: config.ssl.certPath
+    });
+    
+    // Check if certificate files exist
+    if (fs.existsSync(config.ssl.keyPath) && fs.existsSync(config.ssl.certPath)) {
+      // Validate certificate files are readable and not empty
+      const keyContent = fs.readFileSync(config.ssl.keyPath, 'utf8');
+      const certContent = fs.readFileSync(config.ssl.certPath, 'utf8');
+      
+      if (keyContent.trim() && certContent.trim()) {
+        httpsOptions = {
+          key: keyContent,
+          cert: certContent
+        };
+        httpsEnabled = true;
+        logger.info('SSL certificates loaded and validated successfully');
+      } else {
+        throw new Error('Certificate files are empty');
+      }
+    } else {
+      throw new Error(`Certificate files not found: key=${fs.existsSync(config.ssl.keyPath)}, cert=${fs.existsSync(config.ssl.certPath)}`);
+    }
   } catch (error) {
-    logger.error('Failed to load SSL certificates', error);
-    process.exit(1);
+    logger.error('Failed to load SSL certificates, falling back to HTTP only', error);
+    httpsEnabled = false;
+    httpsOptions = null;
   }
+} else {
+  logger.info('HTTPS disabled in configuration, running HTTP only');
 }
 
-// Create HTTP server (for redirects)
-const httpServer = http.createServer((req, res) => {
-  // Redirect all HTTP traffic to HTTPS
-  const host = req.headers.host.replace(`:${config.server.httpPort}`, `:${config.server.httpsPort}`);
-  const httpsUrl = `https://${host}${req.url}`;
-  
-  logger.info('Redirecting HTTP to HTTPS', { 
-    originalUrl: `http://${req.headers.host}${req.url}`,
-    redirectUrl: httpsUrl 
+let server;
+
+if (httpsEnabled && httpsOptions) {
+  // Create HTTP server for redirects
+  const httpServer = http.createServer((req, res) => {
+    const host = req.headers.host.replace(`:${config.server.httpPort || 3000}`, `:${config.server.httpsPort || 4443}`);
+    const httpsUrl = `https://${host}${req.url}`;
+    
+    logger.debug('Redirecting HTTP to HTTPS', { 
+      originalUrl: `http://${req.headers.host}${req.url}`,
+      redirectUrl: httpsUrl 
+    });
+    
+    res.writeHead(301, { Location: httpsUrl });
+    res.end();
   });
+
+  // Create HTTPS server
+  server = https.createServer(httpsOptions, app);
   
-  res.writeHead(301, { Location: httpsUrl });
-  res.end();
-});
-
-// Create HTTPS server
-const httpsServer = https.createServer(httpsOptions, app);
-
-// Start servers
-httpServer.listen(config.server.httpPort, () => {
-  logger.info(`HTTP server (redirect) running on port ${config.server.httpPort}`);
-});
-
-httpsServer.listen(config.server.httpsPort, () => {
-  logger.info(`HTTPS server running on port ${config.server.httpsPort}`, {
-    environment: config.server.nodeEnv,
-    httpsPort: config.server.httpsPort,
-    httpPort: config.server.httpPort
+  // Start HTTP redirect server
+  const httpPort = config.server.httpPort || 3000;
+  httpServer.listen(httpPort, () => {
+    logger.info(`HTTP server (redirect) running on port ${httpPort}`);
   });
-});
 
-// Graceful shutdown for both servers
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down servers gracefully');
-  httpServer.close(() => {
-    httpsServer.close(() => {
-      process.exit(0);
+  // Start HTTPS server
+  const httpsPort = config.server.httpsPort || 4443;
+  server.listen(httpsPort, () => {
+    logger.info(`HTTPS server running on port ${httpsPort}`, {
+      environment: config.server.nodeEnv,
+      httpsPort: httpsPort,
+      httpPort: httpPort,
+      ssl: true
     });
   });
-});
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down servers gracefully');
-  httpServer.close(() => {
-    httpsServer.close(() => {
-      process.exit(0);
+} else {
+  // Create HTTP server only
+  server = http.createServer(app);
+  
+  const port = config.server.port || 4000;
+  server.listen(port, () => {
+    logger.info(`HTTP server running on port ${port}`, {
+      environment: config.server.nodeEnv,
+      port: port,
+      ssl: false,
+      note: httpsEnabled === false ? 'HTTPS disabled in configuration' : 'HTTPS disabled - SSL certificate issues'
     });
   });
+}
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    logger.error(`Port ${error.port} is already in use`);
+    process.exit(1);
+  } else {
+    logger.error('Server error:', error);
+  }
+});
+
+// Graceful shutdown
+const gracefulShutdown = () => {
+  logger.info('Shutting down servers gracefully');
+  server.close(() => {
+    logger.info('Server closed successfully');
+    process.exit(0);
+  });
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    logger.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+// Unhandled promise rejection handler
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit in production, just log
+  if (config.server.nodeEnv !== 'production') {
+    process.exit(1);
+  }
+});
+
+// Uncaught exception handler
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
 });
 
 // Export for testing
-module.exports = { httpServer, httpsServer };
+module.exports = { server };
