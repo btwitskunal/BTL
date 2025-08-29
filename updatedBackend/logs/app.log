@@ -228,3 +228,36 @@
 {"timestamp":"2025-08-28T09:24:04.198Z","level":"INFO","message":"SIGINT received, shutting down gracefully"}
 {"timestamp":"2025-08-29T11:14:45.589Z","level":"INFO","message":"SAML authentication disabled"}
 {"timestamp":"2025-08-29T11:14:45.593Z","level":"INFO","message":"SSL certificates loaded successfully"}
+{"timestamp":"2025-08-29T11:27:56.724Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T11:27:56.729Z","level":"INFO","message":"HTTPS enabled, checking for certificate files...","keyPath":"./key.pem","certPath":"./cert.pem"}
+{"timestamp":"2025-08-29T11:27:56.729Z","level":"INFO","message":"SSL certificates loaded and validated successfully"}
+{"timestamp":"2025-08-29T12:42:42.958Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T12:42:42.962Z","level":"INFO","message":"HTTPS enabled, checking for certificate files...","keyPath":"./key.pem","certPath":"./cert.pem"}
+{"timestamp":"2025-08-29T12:42:42.963Z","level":"INFO","message":"SSL certificates loaded and validated successfully"}
+{"timestamp":"2025-08-29T12:43:51.577Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T12:43:51.581Z","level":"INFO","message":"HTTPS enabled, checking for certificate files...","keyPath":"./key.pem","certPath":"./cert.pem"}
+{"timestamp":"2025-08-29T12:43:51.581Z","level":"INFO","message":"SSL certificates loaded and validated successfully"}
+{"timestamp":"2025-08-29T17:48:07.417Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T17:48:07.422Z","level":"INFO","message":"HTTPS disabled in configuration, running HTTP only"}
+{"timestamp":"2025-08-29T17:48:07.422Z","level":"INFO","message":"Starting HTTP server..."}
+{"timestamp":"2025-08-29T17:48:07.424Z","level":"INFO","message":"HTTP server running on port 4443","environment":"development","port":4443,"ssl":false,"note":"HTTPS disabled in configuration"}
+{"timestamp":"2025-08-29T17:48:07.552Z","level":"INFO","message":"Database schema synchronized with template.xlsx"}
+{"timestamp":"2025-08-29T17:53:04.650Z","level":"INFO","message":"SIGINT received, shutting down gracefully"}
+{"timestamp":"2025-08-29T17:57:36.196Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T17:57:36.200Z","level":"INFO","message":"HTTPS disabled in configuration, running HTTP only"}
+{"timestamp":"2025-08-29T17:57:36.200Z","level":"INFO","message":"Starting HTTP server..."}
+{"timestamp":"2025-08-29T17:57:36.202Z","level":"INFO","message":"HTTP server running on port 4443","environment":"development","port":4443,"ssl":false,"note":"HTTPS disabled in configuration"}
+{"timestamp":"2025-08-29T17:57:36.308Z","level":"INFO","message":"Database schema synchronized with template.xlsx"}
+{"timestamp":"2025-08-29T17:57:38.295Z","level":"INFO","message":"SIGINT received, shutting down gracefully"}
+{"timestamp":"2025-08-29T17:57:53.981Z","level":"INFO","message":"SAML authentication disabled"}
+{"timestamp":"2025-08-29T17:57:53.983Z","level":"INFO","message":"HTTPS enabled, checking for certificate files...","keyPath":"./key.pem","certPath":"./cert.pem"}
+{"timestamp":"2025-08-29T17:57:53.984Z","level":"INFO","message":"Starting HTTP server..."}
+{"timestamp":"2025-08-29T17:57:53.985Z","level":"INFO","message":"HTTP server running on port 4443","environment":"development","port":4443,"ssl":false,"note":"HTTPS disabled in configuration"}
+{"timestamp":"2025-08-29T17:57:54.046Z","level":"INFO","message":"Database schema synchronized with template.xlsx"}
+{"timestamp":"2025-08-29T18:28:04.696Z","level":"INFO","message":"SIGINT received, shutting down gracefully"}
+{"timestamp":"2025-08-29T18:28:07.415Z","level":"INFO","message":"SAML authentication enabled"}
+{"timestamp":"2025-08-29T18:28:07.432Z","level":"INFO","message":"HTTPS enabled, checking for certificate files...","keyPath":"./key.pem","certPath":"./cert.pem"}
+{"timestamp":"2025-08-29T18:28:07.465Z","level":"INFO","message":"Starting HTTP server..."}
+{"timestamp":"2025-08-29T18:28:07.467Z","level":"INFO","message":"HTTP server running on port 4443","environment":"development","port":4443,"ssl":false,"note":"HTTPS disabled in configuration"}
+{"timestamp":"2025-08-29T18:28:07.556Z","level":"INFO","message":"Database schema synchronized with template.xlsx"}
+{"timestamp":"2025-08-29T18:28:22.090Z","level":"INFO","message":"SIGINT received, shutting down gracefully"}
