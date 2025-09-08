@@ -1,0 +1,64 @@
+{
+  "name": "btl-marketing-portal",
+  "version": "1.0.0",
+  "description": "Unified BTL Marketing Execution Portal - Full Stack Application",
+  "main": "updatedBackend/server.js",
+  "scripts": {
+    "start": "node updatedBackend/server.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "nodemon updatedBackend/server.js",
+    "dev:frontend": "cd Frontend && npm run dev",
+    "build": "cd Frontend && npm run build",
+    "build:start": "npm run build && npm start",
+    "install:all": "npm install && cd Frontend && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "cd Frontend && npm run lint",
+    "security-check": "npm audit"
+  },
+  "keywords": [
+    "btl",
+    "marketing",
+    "portal",
+    "excel",
+    "upload",
+    "analytics",
+    "saml",
+    "authentication"
+  ],
+  "author": "Shree Cement Limited",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dotenv": "^17.2.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.18.2",
+    "helmet": "^7.1.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.14.2",
+    "passport": "^0.7.0",
+    "passport-azure-ad": "^4.3.5",
+    "passport-saml": "^3.2.4",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "axios": "^1.6.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "form-data": "^4.0.0",
+    "nodemon": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/btl-marketing-portal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/btl-marketing-portal/issues"
+  },
+  "homepage": "https://github.com/your-org/btl-marketing-portal#readme"
+}
