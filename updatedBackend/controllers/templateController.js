@@ -67,7 +67,7 @@ exports.getElements = async (req, res) => {
       });
     }
 
-    const [rows] = await pool.query(
+    const [rows] = await pool.execute(
       `SELECT DISTINCT \`${elementColumn.name}\` as element FROM uploaded_data WHERE \`${elementColumn.name}\` IS NOT NULL AND \`${elementColumn.name}\` != '' ORDER BY \`${elementColumn.name}\``
     );
 
@@ -138,7 +138,7 @@ exports.getElementDetails = async (req, res) => {
       query += `, \`${uomColumn.name}\``;
     }
 
-    const [rows] = await pool.query(query, [element]);
+    const [rows] = await pool.execute(query, [element]);
 
     const attributes = attributeColumn ? [...new Set(rows.map(row => row.attribute).filter(Boolean))] : [];
     const uoms = uomColumn ? [...new Set(rows.map(row => row.uom).filter(Boolean))] : [];
@@ -204,7 +204,7 @@ exports.getVisualizationData = async (req, res) => {
       params.push(uom);
     }
 
-    const [rows] = await pool.query(query, params);
+    const [rows] = await pool.execute(query, params);
 
     // Generate analytics data
     const analytics = generateAnalytics(rows, template);
@@ -307,7 +307,7 @@ exports.getCustomerBTLActivities = async (req, res) => {
     const query = `SELECT * FROM uploaded_data WHERE ${whereConditions}`;
     const params = customerColumns.map(() => customerSapId);
 
-    const [rows] = await pool.query(query, params);
+    const [rows] = await pool.execute(query, params);
     btlActivities = rows;
 
     // Generate analytics for BTL activities

@@ -137,7 +137,7 @@ exports.uploadFile = async (req, res) => {
           
           // Use safe SQL construction
           const sql = SQLSanitizer.buildSafeInsertQuery('uploaded_data', templateColumns);
-          await pool.query(sql, [valuesToInsert]);
+          await pool.execute(sql, [valuesToInsert]);
           
           inserted += batch.length;
         }

@@ -28,7 +28,7 @@ async function syncDataTableSchema() {
   const DATA_TABLE = 'uploaded_data';
   const columns = await getTemplateDefinition();
   
-  const [currentColsRows] = await pool.query(`SHOW COLUMNS FROM ${DATA_TABLE}`);
+  const [currentColsRows] = await pool.execute(`SHOW COLUMNS FROM ${DATA_TABLE}`);
   const currentCols = currentColsRows.map(col => ({
     name: col.Field,
     type: col.Type.toUpperCase()
@@ -51,16 +51,16 @@ async function syncDataTableSchema() {
     const desiredType = mapType(col.type);
     
     if (!existingCol) {
-      await pool.query(`ALTER TABLE ${DATA_TABLE} ADD COLUMN \`${col.name}\` ${desiredType} NULL`);
+      await pool.execute(`ALTER TABLE ${DATA_TABLE} ADD COLUMN \`${col.name}\` ${desiredType} NULL`);
     } else if (!existingCol.type.includes(desiredType)) {
-      await pool.query(`ALTER TABLE ${DATA_TABLE} MODIFY COLUMN \`${col.name}\` ${desiredType} NULL`);
+      await pool.execute(`ALTER TABLE ${DATA_TABLE} MODIFY COLUMN \`${col.name}\` ${desiredType} NULL`);
     }
   }
 
   // Remove columns not in template
   for (const dbCol of currentCols) {
     if (!columns.find(col => col.name === dbCol.name)) {
-      await pool.query(`ALTER TABLE ${DATA_TABLE} DROP COLUMN \`${dbCol.name}\``);
+      await pool.execute(`ALTER TABLE ${DATA_TABLE} DROP COLUMN \`${dbCol.name}\``);
     }
   }
 }

@@ -18,10 +18,10 @@ try {
 // Initialize SAML strategy
 const samlStrategy = new SamlStrategy(
   {
-    entryPoint: process.env.SAML_ENTRY_POINT || 'https://login.microsoftonline.com/common/saml2',
-    issuer: process.env.SAML_ISSUER || 'https://localhost:4443', // Changed to HTTPS
-    callbackUrl: process.env.SAML_CALLBACK_URL || 'https://localhost:4443/auth/sso/callback', // Changed to HTTPS
-    logoutCallbackUrl: process.env.SAML_LOGOUT_CALLBACK_URL || 'https://localhost:4443/auth/sso/logout/callback', // Changed to HTTPS
+    entryPoint: config.saml.entryPoint || 'https://login.microsoftonline.com/common/saml2',
+    issuer: config.saml.issuer || 'https://localhost:4443',
+    callbackUrl: config.saml.callbackUrl || 'https://localhost:4443/auth/sso/callback',
+    logoutCallbackUrl: config.saml.logoutCallbackUrl || 'https://localhost:4443/auth/sso/logout/callback',
     cert: publicCert,
     validateInResponseTo: false,
     requestIdExpirationPeriodMs: 28800000, // 8 hours
