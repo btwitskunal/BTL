@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+updatedBackend/node_modules/
+Frontend/node_modules/
+
+# Logs
+updatedBackend/logs/*.log
+*.log
+
+# Environment variables
+.env
+updatedBackend/.env
+Frontend/.env
+
+# Build outputs
+Frontend/dist/
+updatedBackend/uploads/
+updatedBackend/reports/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Test files
+test-*.js
+test-integration.js
+
+# Temporary files
+*.tmp
+*.temp
